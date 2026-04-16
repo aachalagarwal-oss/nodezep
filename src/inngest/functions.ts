@@ -1,15 +1,24 @@
 // src/inngest/functions.ts
 import { inngest } from "./client";
+import prisma from "@/lib/db";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { generateText } from "ai";
 
-export const processTask = inngest.createFunction(
-  { id: "process-task", triggers: { event: "app/task.created" } },
+const google = createGoogleGenerativeAI();
+export const execute = inngest.createFunction(
+  {
+    id: "execute-ai",
+    triggers: { event: "execute/ai" },
+  },
   async ({ event, step }) => {
-    const result = await step.run("handle-task", async () => {
-      return { processed: true, id: event.data.id };
+
+    await step.sleep("pretend","5s")
+
+    const { steps } = await step.ai.wrap("gemini-generate-text", generateText, {
+      model: google("gemini 2.5 flash"),
+      system: "You are a helpful assistant",
+      prompt: "What is",
     });
-
-    await step.sleep("pause", "1s");
-
-    return { message: `Task ${event.data.id} complete`, result };
+    return steps;
   },
 );

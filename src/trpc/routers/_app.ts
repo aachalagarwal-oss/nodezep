@@ -1,24 +1,30 @@
-import { createTRPCRouter, protectedProcedure } from "../init";
+import { baseProcedure, createTRPCRouter, protectedProcedure } from "../init";
 import prisma from "@/lib/db";
+import { inngest } from "@/inngest/client";
+import { google } from '@ai-sdk/google';
+import { generateText } from 'ai';
+
+
 export const appRouter = createTRPCRouter({
+  testAi: baseProcedure.mutation(async () => {
+     await inngest.send({
+      name:"execute/ai",
+     })
+   
+
+   return { success: true, message: "Job queued" };
+  }),
   getWorkflows: protectedProcedure.query(({ ctx }) => {
     // console.log({userId:ctx.auth.user.id})
-    return prisma.user.findMany();
+    return prisma.workflow.findMany();
   }),
-  createWorkflow: protectedProcedure.mutation(() => {
-    //fetch the video
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    //Transcribe the video
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    //Send the transcription to OpenAI
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    return prisma.workflow.create({
-      data: {
-        name: "test-workflow ",
-      },
+  createWorkflow: protectedProcedure.mutation(async () => {
+    await inngest.send({
+      name: "app/task.created",
+      data: { id: "task_001" },
     });
+
+    return { success: true, message: "Job queued" };
   }),
 });
 // export type definition of API
