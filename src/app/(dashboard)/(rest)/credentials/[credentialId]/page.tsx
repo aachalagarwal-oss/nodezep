@@ -5,6 +5,7 @@ interface pageProps{
 }
 
 const Page=async ({params}:pageProps)=>{
+     await requireAuth();
     const {credentialId}=await params;
     return(
         <p>CredentialId:{credentialId}</p>

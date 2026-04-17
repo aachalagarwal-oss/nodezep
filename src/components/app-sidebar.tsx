@@ -19,6 +19,7 @@ import {
   SidebarGroupContent,
   SidebarHeader,
   SidebarInset,
+  SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
@@ -26,33 +27,60 @@ import {
 import { title } from "process";
 import { ur } from "zod/v4/locales";
 import { group } from "console";
+import { authClient } from "@/lib/auth-client";
 
 const menuItems = [
   {
-    title: "Workflows",
+    title: "Main",
     items: [
       {
         title: "All Workflows",
         icon: FolderOpen,
         url: "/workflows",
       },
+      {
+        title: "Credentials",
+        icon: KeyIcon,
+        url: "/credentials",
+      },
+      {
+        title: "Executions",
+        icon: HistoryIcon,
+        url: "/executions",
+      },
     ],
   },
 ];
 
 export const AppSidebar = () => {
+  const router = useRouter();
+  const pathname = usePathname();
   return (
     <Sidebar collapsible="icon">
+      <SidebarHeader>
+        <SidebarMenuItem>
+          <SidebarMenuButton asChild className="gap-x-4 h-10 px-4">
+            <Link href="/" prefetch>
+              <Image src="/logos/logo.svg" alt="Logo" width={30} height={30} />
+              <span className="font-semibold text-sm">Nodebase</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarHeader>
       <SidebarContent>
         {menuItems.map((group) => (
           <SidebarGroup key={group.title}>
             <SidebarGroupContent>
-              {" "}
+              <SidebarMenu>
               {group.items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     tooltip={item.title}
-                    isActive={false}
+                    isActive={
+                      item.url === "/"
+                        ? pathname === "/"
+                        : pathname === item.url
+                    }
                     asChild
                     className="gap-x-4 h-10 px-4"
                   >
@@ -63,10 +91,51 @@ export const AppSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Upgade to Pro"
+              className="gap-x-4 h-10 px-4"
+              onClick={() => {}}
+            >
+              <StarIcon className="h-4 w-4" />
+              <span>Upgrade to Pro</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Billing Portal"
+              className="gap-x-4 h-10 px-4"
+              onClick={() => {}}
+            >
+              <CreditCardIcon className="h-4 w-4" />
+              <span>Billing portal</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+           <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Log out"
+              className="gap-x-4 h-10 px-4"
+              onClick={() =>authClient.signOut({
+                fetchOptions: {
+                onSuccess() {
+                  router.push("/login");
+                },
+              }
+              })}
+            >
+              <LogOutIcon className="h-4 w-4" />
+              <span>Log out</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 };
